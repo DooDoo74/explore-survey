@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Explore Trip Survey</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand__title">Explore Trip Survey</div>
+          <div class="brand__sub">Jump to any question</div>
+        </div>
+
+        <div class="search">
+          <input id="searchInput" type="search" placeholder="Search questions" />
+        </div>
+
+        <div class="progress">
+          <div class="progress__label">Completion</div>
+          <div class="progress__bar" aria-hidden="true">
+            <div id="progressFill" class="progress__fill"></div>
+          </div>
+          <div id="progressText" class="progress__text">0% complete</div>
+        </div>
+
+        <nav id="questionNav" class="nav" aria-label="Survey navigation"></nav>
+
+        <div class="sidebar__footer">
+          <button id="clearBtn" class="ghost">Clear all answers</button>
+          <button id="exportBtn" class="primary">Export JSON</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="main__header">
+          <div>
+            <div class="eyebrow">Survey</div>
+            <h1>Before You Travel</h1>
+            <p>Answer in any order. Your progress saves in this browser.</p>
+          </div>
+          <div class="header__actions">
+            <button id="expandAllBtn" class="ghost">Expand all</button>
+            <button id="collapseAllBtn" class="ghost">Collapse all</button>
+          </div>
+        </header>
+
+        <section class="submit-bar">
+          <div>
+            <div class="submit-bar__title">Ready to send?</div>
+            <div class="submit-bar__meta">
+              Submissions are saved to Google Sheets. You can continue editing after sending.
+            </div>
+          </div>
+          <div class="submit-bar__actions">
+            <span id="submitStatus" class="submit-bar__status">Not submitted yet</span>
+            <button id="submitBtn" class="primary">Submit to Sheet</button>
+          </div>
+        </section>
+
+        <section id="survey" class="survey"></section>
+      </main>
+    </div>
+
+    <div id="mobileMenu" class="mobile-menu" aria-hidden="true">
+      <div class="mobile-menu__panel" role="dialog" aria-modal="true" aria-label="Survey navigation">
+        <div class="mobile-menu__header">
+          <div>
+            <div class="mobile-menu__title">Navigate</div>
+            <div class="mobile-menu__subtitle">Jump to any question</div>
+          </div>
+          <button id="closeMobileMenuBtn" class="ghost" type="button">Close</button>
+        </div>
+        <div id="mobileNav" class="mobile-menu__nav"></div>
+      </div>
+    </div>
+
+    <button id="mobileMenuBtn" class="mobile-menu__button" type="button">Menu</button>
+
+    <dialog id="exportDialog" class="dialog">
+      <div class="dialog__content">
+        <h2>Exported Answers</h2>
+        <textarea id="exportOutput" readonly></textarea>
+        <div class="dialog__actions">
+          <button id="copyBtn" class="primary">Copy</button>
+          <button id="closeDialogBtn" class="ghost">Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
