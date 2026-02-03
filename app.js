@@ -40,6 +40,8 @@ const collapseAllBtn = document.getElementById("collapseAllBtn");
 const submitBtn = document.getElementById("submitBtn");
 const submitStatus = document.getElementById("submitStatus");
 const navSubmitStatus = document.getElementById("navSubmitStatus");
+const mobileSubmitStatus = document.getElementById("mobileSubmitStatus");
+const mobileSaveBtn = document.getElementById("mobileSaveBtn");
 const mobileMenu = document.getElementById("mobileMenu");
 const mobileMenuBtn = document.getElementById("mobileMenuBtn");
 const closeMobileMenuBtn = document.getElementById("closeMobileMenuBtn");
@@ -852,7 +854,7 @@ function renderSurvey() {
 
     const navButton = document.createElement("button");
     navButton.type = "button";
-    navButton.textContent = question.title;
+    navButton.textContent = getNavLabel(question);
     navButton.dataset.target = question.id;
     navButton.addEventListener("click", () => jumpTo(question.id));
     navEl.appendChild(navButton);
@@ -876,6 +878,9 @@ function handleInput(field, value) {
     delete state.answers[field.id];
   }
   saveAnswers();
+  if (field.id && field.id.endsWith("_name")) {
+    updateNavLabels(field.id);
+  }
 }
 
 function handleChoice(field, input) {
@@ -983,6 +988,27 @@ function updateProgress() {
   submitBtn.textContent = requiredComplete ? "Submit Full Survey" : "Save";
 }
 
+function getNavLabel(question) {
+  if (question.id && question.id.startsWith("hotel_")) {
+    const nameKey = `${question.id}_name`;
+    const name = state.answers[nameKey];
+    if (name) {
+      return name;
+    }
+  }
+  return question.title;
+}
+
+function updateNavLabels(fieldId) {
+  const questionId = fieldId.replace(/_name$/, "");
+  const question = questions.find((q) => q.id === questionId);
+  if (!question) return;
+  const label = getNavLabel(question);
+  document.querySelectorAll(`[data-target="${questionId}"]`).forEach((button) => {
+    button.textContent = label;
+  });
+}
+
 function jumpTo(id) {
   const target = document.getElementById(id);
   if (!target) return;
@@ -1062,6 +1088,8 @@ function setSubmitStatus(text, color = "") {
   submitStatus.style.color = color;
   navSubmitStatus.textContent = text;
   navSubmitStatus.style.color = color;
+  mobileSubmitStatus.textContent = text;
+  mobileSubmitStatus.style.color = color;
 }
 
 searchInput.addEventListener("input", (event) => {
@@ -1108,6 +1136,7 @@ collapseAllBtn.addEventListener("click", () => {
 
 submitBtn.addEventListener("click", submitToSheet);
 navSaveBtn.addEventListener("click", submitToSheet);
+mobileSaveBtn.addEventListener("click", submitToSheet);
 mobileMenuBtn.addEventListener("click", openMobileMenu);
 closeMobileMenuBtn.addEventListener("click", closeMobileMenu);
 mobileMenu.addEventListener("click", (event) => {
