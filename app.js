@@ -42,6 +42,10 @@ const submitStatus = document.getElementById("submitStatus");
 const navSubmitStatus = document.getElementById("navSubmitStatus");
 const mobileSubmitStatus = document.getElementById("mobileSubmitStatus");
 const mobileSaveBtn = document.getElementById("mobileSaveBtn");
+const pmSelect = document.getElementById("pmSelect");
+const pmOtherWrap = document.getElementById("pmOtherWrap");
+const pmOtherEmail = document.getElementById("pmOtherEmail");
+const pmPanel = document.getElementById("pmPanel");
 const mobileMenu = document.getElementById("mobileMenu");
 const mobileMenuBtn = document.getElementById("mobileMenuBtn");
 const closeMobileMenuBtn = document.getElementById("closeMobileMenuBtn");
@@ -54,6 +58,7 @@ const state = {
 
 let questions = [];
 let submitEndpoint = GOOGLE_SHEETS_ENDPOINT;
+let requiredComplete = false;
 
 function loadAnswers() {
   try {
@@ -952,7 +957,7 @@ function updateProgress() {
   progressFill.style.width = `${percent}%`;
   progressText.textContent = `${percent}% complete`;
 
-  const requiredComplete = answeredFields >= totalFields && totalFields > 0;
+  requiredComplete = answeredFields >= totalFields && totalFields > 0;
 
   document.querySelectorAll(".nav button").forEach((button) => {
     const id = button.dataset.target;
@@ -986,7 +991,10 @@ function updateProgress() {
     button.classList.toggle("completed", completed);
   });
 
-  submitBtn.textContent = requiredComplete ? "Submit Full Survey" : "Save";
+  const actionLabel = requiredComplete ? "Submit Full Survey" : "Save";
+  submitBtn.textContent = actionLabel;
+  navSaveBtn.textContent = actionLabel;
+  mobileSaveBtn.textContent = actionLabel;
 }
 
 function getNavLabel(question) {
@@ -1063,13 +1071,28 @@ async function submitToSheet() {
     return;
   }
 
+  const pmEmail = getPmEmail();
+  if (requiredComplete && !pmEmail) {
+    setSubmitStatus("Select a Product Manager", "#b42318");
+    focusPmPanel();
+    return;
+  }
+
   submitBtn.disabled = true;
+  navSaveBtn.disabled = true;
+  mobileSaveBtn.disabled = true;
   setSubmitStatus("Submitting...");
 
   const payload = {
     submission_id: getSubmissionId(),
     submitted_at: new Date().toISOString(),
-    data: flattenAnswers(),
+    data: {
+      ...flattenAnswers(),
+      pm_choice: pmSelect.value || "",
+      pm_email: pmEmail || "",
+    },
+    is_final: requiredComplete,
+    pm_email: pmEmail || "",
   };
 
   try {
@@ -1089,6 +1112,8 @@ async function submitToSheet() {
     setSubmitStatus("Submit failed", "#b42318");
   } finally {
     submitBtn.disabled = false;
+    navSaveBtn.disabled = false;
+    mobileSaveBtn.disabled = false;
   }
 }
 
@@ -1099,6 +1124,42 @@ function setSubmitStatus(text, color = "") {
   navSubmitStatus.style.color = color;
   mobileSubmitStatus.textContent = text;
   mobileSubmitStatus.style.color = color;
+}
+
+function getPmEmail() {
+  const selection = pmSelect.value;
+  if (!selection) return "";
+  if (selection === "other") {
+    const value = pmOtherEmail.value.trim();
+    if (!value) return "";
+    const lower = value.toLowerCase();
+    if (!lower.endsWith("@explore.co.uk")) {
+      return "";
+    }
+    return value;
+  }
+  return selection;
+}
+
+function togglePmOther() {
+  const isOther = pmSelect.value === "other";
+  pmOtherWrap.classList.toggle("is-visible", isOther);
+  if (!isOther) {
+    pmOtherEmail.value = "";
+  }
+}
+
+function focusPmPanel() {
+  if (!pmPanel) return;
+  pmPanel.classList.add("is-highlighted");
+  pmPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => pmPanel.classList.remove("is-highlighted"), 1500);
+}
+
+function syncPmState() {
+  state.answers.pm_choice = pmSelect.value || "";
+  state.answers.pm_email = pmOtherEmail.value.trim();
+  saveAnswers();
 }
 
 searchInput.addEventListener("input", (event) => {
@@ -1153,5 +1214,17 @@ mobileMenu.addEventListener("click", (event) => {
     closeMobileMenu();
   }
 });
+pmSelect.addEventListener("change", () => {
+  togglePmOther();
+  setSubmitStatus("Not submitted yet");
+  syncPmState();
+});
+pmOtherEmail.addEventListener("input", () => {
+  setSubmitStatus("Not submitted yet");
+  syncPmState();
+});
 
 renderSurvey();
+pmSelect.value = state.answers.pm_choice || "";
+pmOtherEmail.value = state.answers.pm_email || "";
+togglePmOther();
