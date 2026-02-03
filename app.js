@@ -1,6 +1,7 @@
 const STORAGE_KEY = "explore_trip_survey_answers";
+const SUBMISSION_ID_KEY = "explore_trip_survey_submission_id";
 const GOOGLE_SHEETS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbwBiuXBKLaWW4Z6-Nz_8szh_CD8scJzhdKjJ5gEicka_4cn58PVKYqkWdF8z-4qbipm/exec";
+  "https://script.google.com/macros/s/AKfycbz4_ir98blQ0FtR8JzKU40hUewnm8irsyVHHY1t0gLElSqywroqRboiRDRhMxmi_dt4/exec";
 
 const ratingOptions = ["Excellent", "Good", "Satisfactory", "Poor", "Very Poor"];
 const yesNo = ["Yes", "No"];
@@ -61,6 +62,17 @@ function loadAnswers() {
   } catch (err) {
     return {};
   }
+}
+
+function getSubmissionId() {
+  let id = localStorage.getItem(SUBMISSION_ID_KEY);
+  if (!id) {
+    id = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `sub_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    localStorage.setItem(SUBMISSION_ID_KEY, id);
+  }
+  return id;
 }
 
 function saveAnswers() {
@@ -989,6 +1001,7 @@ async function submitToSheet() {
   submitStatus.style.color = "";
 
   const payload = {
+    submission_id: getSubmissionId(),
     submitted_at: new Date().toISOString(),
     data: flattenAnswers(),
   };
