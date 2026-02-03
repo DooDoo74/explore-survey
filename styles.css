@@ -417,8 +417,7 @@ h1 {
   }
 
   .sidebar {
-    height: auto;
-    position: relative;
+    display: none;
   }
 
   .main {
