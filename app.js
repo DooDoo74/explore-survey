@@ -850,6 +850,7 @@ function renderSurvey() {
     });
 
     card.append(header, body);
+    card.dataset.index = `${index + 1}`;
     surveyEl.appendChild(card);
 
     const navButton = document.createElement("button");
@@ -1007,6 +1008,14 @@ function updateNavLabels(fieldId) {
   document.querySelectorAll(`[data-target="${questionId}"]`).forEach((button) => {
     button.textContent = label;
   });
+  const card = document.getElementById(questionId);
+  if (card) {
+    const index = card.dataset.index || "";
+    const titleEl = card.querySelector(".card__title");
+    if (titleEl) {
+      titleEl.textContent = `${index}. ${label}`;
+    }
+  }
 }
 
 function jumpTo(id) {

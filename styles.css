@@ -486,8 +486,18 @@ h1 {
 
 @media (min-width: 981px) {
   .sidebar {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     height: 100vh;
+    width: 320px;
+  }
+
+  .app {
+    display: block;
+  }
+
+  .main {
+    margin-left: 320px;
   }
 }
