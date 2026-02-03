@@ -33,16 +33,13 @@ const progressText = document.getElementById("progressText");
 const searchInput = document.getElementById("searchInput");
 
 const clearBtn = document.getElementById("clearBtn");
-const exportBtn = document.getElementById("exportBtn");
-const exportDialog = document.getElementById("exportDialog");
-const exportOutput = document.getElementById("exportOutput");
-const copyBtn = document.getElementById("copyBtn");
-const closeDialogBtn = document.getElementById("closeDialogBtn");
+const navSaveBtn = document.getElementById("navSaveBtn");
 
 const expandAllBtn = document.getElementById("expandAllBtn");
 const collapseAllBtn = document.getElementById("collapseAllBtn");
 const submitBtn = document.getElementById("submitBtn");
 const submitStatus = document.getElementById("submitStatus");
+const navSubmitStatus = document.getElementById("navSubmitStatus");
 const mobileMenu = document.getElementById("mobileMenu");
 const mobileMenuBtn = document.getElementById("mobileMenuBtn");
 const closeMobileMenuBtn = document.getElementById("closeMobileMenuBtn");
@@ -78,6 +75,19 @@ function getSubmissionId() {
 function saveAnswers() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.answers));
   updateProgress();
+}
+
+function isCommentField(field) {
+  if (!field || !field.label) return false;
+  const label = field.label.trim().toLowerCase();
+  return label === "comments" || label.startsWith("comments");
+}
+
+function isOptionalField(field) {
+  if (field.type === "action") return true;
+  if (field.optional) return true;
+  if (field.id && field.id.endsWith("_comments")) return true;
+  return isCommentField(field);
 }
 
 function getHotelCount() {
@@ -915,12 +925,12 @@ function updateCollapsed() {
 
 function updateProgress() {
   const totalFields = questions.reduce(
-    (sum, q) => sum + q.fields.filter((field) => field.type !== "action").length,
+    (sum, q) => sum + q.fields.filter((field) => !isOptionalField(field)).length,
     0
   );
   const answeredFields = questions.reduce((sum, q) => {
     const count = q.fields.reduce((inner, field) => {
-      if (field.type === "action") {
+      if (isOptionalField(field)) {
         return inner;
       }
       const value = state.answers[field.id];
@@ -936,10 +946,15 @@ function updateProgress() {
   progressFill.style.width = `${percent}%`;
   progressText.textContent = `${percent}% complete`;
 
+  const requiredComplete = answeredFields >= totalFields && totalFields > 0;
+
   document.querySelectorAll(".nav button").forEach((button) => {
     const id = button.dataset.target;
     const question = questions.find((q) => q.id === id);
     const completed = question.fields.every((field) => {
+      if (isOptionalField(field)) {
+        return true;
+      }
       const value = state.answers[field.id];
       if (Array.isArray(value)) {
         return value.length > 0;
@@ -948,6 +963,24 @@ function updateProgress() {
     });
     button.classList.toggle("completed", completed);
   });
+
+  document.querySelectorAll(".mobile-menu__nav button").forEach((button) => {
+    const id = button.dataset.target;
+    const question = questions.find((q) => q.id === id);
+    const completed = question.fields.every((field) => {
+      if (isOptionalField(field)) {
+        return true;
+      }
+      const value = state.answers[field.id];
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return Boolean(value);
+    });
+    button.classList.toggle("completed", completed);
+  });
+
+  submitBtn.textContent = requiredComplete ? "Submit Full Survey" : "Save";
 }
 
 function jumpTo(id) {
@@ -991,14 +1024,12 @@ function flattenAnswers() {
 
 async function submitToSheet() {
   if (!submitEndpoint) {
-    submitStatus.textContent = "Missing Google Sheets endpoint";
-    submitStatus.style.color = "#b42318";
+    setSubmitStatus("Missing Google Sheets endpoint", "#b42318");
     return;
   }
 
   submitBtn.disabled = true;
-  submitStatus.textContent = "Submitting...";
-  submitStatus.style.color = "";
+  setSubmitStatus("Submitting...");
 
   const payload = {
     submission_id: getSubmissionId(),
@@ -1018,14 +1049,19 @@ async function submitToSheet() {
       body,
     });
 
-    submitStatus.textContent = "Submitted (check sheet)";
-    submitStatus.style.color = "#027a48";
+    setSubmitStatus("Submitted (check sheet)", "#027a48");
   } catch (err) {
-    submitStatus.textContent = "Submit failed";
-    submitStatus.style.color = "#b42318";
+    setSubmitStatus("Submit failed", "#b42318");
   } finally {
     submitBtn.disabled = false;
   }
+}
+
+function setSubmitStatus(text, color = "") {
+  submitStatus.textContent = text;
+  submitStatus.style.color = color;
+  navSubmitStatus.textContent = text;
+  navSubmitStatus.style.color = color;
 }
 
 searchInput.addEventListener("input", (event) => {
@@ -1058,23 +1094,7 @@ clearBtn.addEventListener("click", () => {
   renderSurvey();
 });
 
-exportBtn.addEventListener("click", () => {
-  exportOutput.value = JSON.stringify(state.answers, null, 2);
-  exportDialog.showModal();
-});
-
-closeDialogBtn.addEventListener("click", () => exportDialog.close());
-
-copyBtn.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(exportOutput.value);
-    copyBtn.textContent = "Copied!";
-    setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
-  } catch (err) {
-    copyBtn.textContent = "Copy failed";
-    setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
-  }
-});
+// Export dialog removed.
 
 expandAllBtn.addEventListener("click", () => {
   state.collapsed.clear();
@@ -1087,6 +1107,7 @@ collapseAllBtn.addEventListener("click", () => {
 });
 
 submitBtn.addEventListener("click", submitToSheet);
+navSaveBtn.addEventListener("click", submitToSheet);
 mobileMenuBtn.addEventListener("click", openMobileMenu);
 closeMobileMenuBtn.addEventListener("click", closeMobileMenu);
 mobileMenu.addEventListener("click", (event) => {

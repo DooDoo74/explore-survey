@@ -30,7 +30,8 @@
 
         <div class="sidebar__footer">
           <button id="clearBtn" class="ghost">Clear all answers</button>
-          <button id="exportBtn" class="primary">Export JSON</button>
+          <span id="navSubmitStatus" class="submit-bar__status">Not submitted yet</span>
+          <button id="navSaveBtn" class="primary">Save</button>
         </div>
       </aside>
 
@@ -56,7 +57,7 @@
           </div>
           <div class="submit-bar__actions">
             <span id="submitStatus" class="submit-bar__status">Not submitted yet</span>
-            <button id="submitBtn" class="primary">Submit to Sheet</button>
+            <button id="submitBtn" class="primary">Save</button>
           </div>
         </section>
 
@@ -78,17 +79,6 @@
     </div>
 
     <button id="mobileMenuBtn" class="mobile-menu__button" type="button">Menu</button>
-
-    <dialog id="exportDialog" class="dialog">
-      <div class="dialog__content">
-        <h2>Exported Answers</h2>
-        <textarea id="exportOutput" readonly></textarea>
-        <div class="dialog__actions">
-          <button id="copyBtn" class="primary">Copy</button>
-          <button id="closeDialogBtn" class="ghost">Close</button>
-        </div>
-      </div>
-    </dialog>
 
     <script src="app.js"></script>
   </body>
