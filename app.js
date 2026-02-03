@@ -734,7 +734,7 @@ function renderSurvey() {
 
     const title = document.createElement("div");
     title.className = "card__title";
-    title.textContent = `${index + 1}. ${question.title}`;
+    title.textContent = `${index + 1}. ${getNavLabel(question)}`;
 
     const meta = document.createElement("div");
     meta.className = "card__meta";
