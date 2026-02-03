@@ -108,6 +108,10 @@ body {
   font-size: 14px;
   cursor: pointer;
   transition: border 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .nav button:hover {
@@ -116,8 +120,14 @@ body {
 }
 
 .nav button.completed {
-  border-color: var(--brand);
-  background: rgba(29, 78, 216, 0.08);
+  border-color: #12b76a;
+  background: rgba(18, 183, 106, 0.12);
+  color: #027a48;
+}
+
+.nav button.completed::after {
+  content: "✓";
+  font-weight: 700;
 }
 
 .sidebar__footer {
@@ -237,6 +247,21 @@ h1 {
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-menu__nav button.completed {
+  border-color: #12b76a;
+  background: rgba(18, 183, 106, 0.12);
+  color: #027a48;
+}
+
+.mobile-menu__nav button.completed::after {
+  content: "✓";
+  font-weight: 700;
 }
 
 .mobile-menu__button {
