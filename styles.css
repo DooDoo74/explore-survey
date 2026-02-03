@@ -483,3 +483,11 @@ h1 {
     justify-content: center;
   }
 }
+
+@media (min-width: 981px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+}
